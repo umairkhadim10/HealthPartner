@@ -1,20 +1,25 @@
 {% extends "customer/base.html" %}
-{% load widget_tweaks %}
 {% block content %}
 <div class="container">
-    <form>
-        <div class="form-group">
-            <label for="exampleInputEmail1">Email address</label>
-            <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp"
-                   placeholder="Enter email">
-            <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
-        </div>
+    <form method="POST" action="{% url 'login' %}">
+        {% csrf_token %}
 
+        {% for field in form %}
         <div class="form-group">
-            <label for="exampleInputPassword1">Password</label>
-            <input type="password" class="form-control" id="exampleInputPassword1" placeholder="Password">
+            <label for="exampleInputEmail1">{{ field.label}}</label>
+            <div class="form-control"> {{field}}</div>
         </div>
+        {% endfor %}
 
+        {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+            <li
+                    {% if message.error %} class="{{ message.error }}" {% endif %}>{{ message.error }}
+            </li>
+            {% endfor %}
+        </ul>
+        {% endif %}
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>
 </div>

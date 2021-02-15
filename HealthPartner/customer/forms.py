@@ -15,7 +15,7 @@ class LoginForm(forms.ModelForm):
         fields = ['username', 'password']
 
 
-class ComputeCaloriesForm(forms.ModelForm):
+class ItemForm(forms.ModelForm):
     class Meta:
         model = Items
-        fields = ['name', 'quantity']
+        fields = ['name', 'quantity',]

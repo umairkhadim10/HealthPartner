@@ -1,19 +1,22 @@
 {% extends "customer/base.html" %}
 {% block content %}
 <div class="container">
-    <form method="POST" action="{% url 'compute_calories' %}"  >
-        {% csrf_token %}
+    <div class="card card-body">
+        <form method="POST" action="{% url 'compute_calories' %}">
+            {{ form.management_form }}
+            {% csrf_token %}
 
-        {% for field in calories_form %}
+            {% for field in form %}
 
-        <div class="form-group">
-            <label>{{ field.label}}</label>
-            <div class="form-control"  > {{field}}</div>
-        </div>
+            <div class=" row form-group">
+                {{field.as_p}}
+            </div>
+            <hr>
 
-        {% endfor %}
-        {{form.errors}}
-        <button type="submit" class="btn btn-primary">Submit</button>
-    </form>
+            {% endfor %}
+
+            <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+    </div>
 </div>
 {% endblock %}

@@ -1,9 +1,14 @@
+from datetime import date
+
 from django.shortcuts import render, redirect
 from .forms import *
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from .models import *
 from django.contrib.auth.decorators import login_required
+from django.forms.formsets import formset_factory
+from django.forms.models import modelformset_factory
+from django.forms import inlineformset_factory
 from django.contrib.auth.hashers import check_password
 
 
@@ -50,7 +55,7 @@ def customer_logout(request):
 @login_required(login_url='login')
 def customer_dashboard(request):
     tweets = Tweets.objects.all()
-    last_five_items = Items.objects.all().order_by('-item_submissions')[:5]
+    last_five_items = Items.objects.all().order_by('-item_submissions_date')[:5]
     context = {
         'tweets': tweets,
         "Last_five_submissions": last_five_items
@@ -62,10 +67,25 @@ def customer_dashboard(request):
 
 
 def customer_calorie_compute(request):
-    tweets = Tweets.objects.all()
-    last_five_items = Items.objects.all().order_by('-item_submissions')[:5]
+    item_formset = modelformset_factory(Items, fields=('name', 'quantity',),  extra=10)
+    # item_formset = inlineformset_factory(ItemSubmissionDate, Items, fields=('name', 'quantity',))
+    formset = item_formset()
+
+    if request.method == "POST":
+        formset = item_formset(request.POST)
+        if formset.is_valid():
+            # formset.save(commit=False)
+            # formset.customer = request.user
+            item_submission_date = ItemSubmissionDate(create_date=date.today())
+            item_submission_date.save()
+            formsets = formset.save(commit=False)
+            for form in formsets:
+                form.customer = request.user
+                form.item_submissions_date = item_submission_date
+                form.save()
+
     context = {
-        'tweets': tweets,
-        "Last_five_submissions": last_five_items
+        'form':  formset
     }
+
     return render(request, 'customer/compute_calories.html', context)

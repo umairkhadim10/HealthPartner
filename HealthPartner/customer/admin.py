@@ -3,7 +3,7 @@ from .models import *
 
 # Register your models here.
 
-admin.site.register(ItemSubmission)
+admin.site.register(ItemSubmissionDate)
 admin.site.register(Items)
 admin.site.register(User)
 admin.site.register(Tweets)

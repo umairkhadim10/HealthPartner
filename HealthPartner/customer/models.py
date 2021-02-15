@@ -11,6 +11,9 @@ class User(AbstractUser):
 class ItemSubmission(models.Model):
     create_date = models.DateField(null=False)
 
+    class Meta:
+        ordering = ['-create_date']
+
 
 # model for having in one day
 class Items(models.Model):
@@ -27,5 +30,13 @@ class Items(models.Model):
     customer = models.ForeignKey(User, on_delete=models.CASCADE)
     item_submissions = models.ForeignKey(ItemSubmission, on_delete=models.CASCADE)
 
+
+# tweets table
+class Tweets(models.Model):
+    user_name = models.CharField(max_length=40,)
+    description = models.CharField(max_length=200,)
+
+    # def get_all_tweets(self):
+    #     return self.
 
 

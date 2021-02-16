@@ -1,6 +1,6 @@
 from datetime import date
 
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from .forms import *
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -10,6 +10,8 @@ from django.forms.formsets import formset_factory
 from django.forms.models import modelformset_factory
 from django.forms import inlineformset_factory
 from django.contrib.auth.hashers import check_password
+from .tables import ItemsTable
+from django.core.paginator import Paginator
 
 
 # Create your views here.
@@ -54,20 +56,24 @@ def customer_logout(request):
 
 @login_required(login_url='login')
 def customer_dashboard(request):
+    items_submission = ItemSubmissionDate.objects.filter(customer=request.user)
+    paginator = Paginator(items_submission, 3)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
     tweets = Tweets.objects.all()
-    last_five_items = Items.objects.all().order_by('-item_submissions_date')[:5]
+    # last_five_items = Items.objects.all().order_by('item_submissions_date')[:5]
     context = {
         'tweets': tweets,
-        "Last_five_submissions": last_five_items
+        "table": page_obj
     }
     return render(request, 'customer/dashboard.html', context)
 
 
 # function to compute the calories of a customer for a day
 
-
+@login_required(login_url='login')
 def customer_calorie_compute(request):
-    item_formset = modelformset_factory(Items, fields=('name', 'quantity',),  extra=10)
+    item_formset = modelformset_factory(Items, fields=('name', 'quantity',), extra=10)
     # item_formset = inlineformset_factory(ItemSubmissionDate, Items, fields=('name', 'quantity',))
     formset = item_formset()
 
@@ -76,16 +82,31 @@ def customer_calorie_compute(request):
         if formset.is_valid():
             # formset.save(commit=False)
             # formset.customer = request.user
-            item_submission_date = ItemSubmissionDate(create_date=date.today())
+            if ItemSubmissionDate.objects.filter(create_date=date.today(), customer=request.user).exists():
+                return redirect('dashboard')
+            item_submission_date = ItemSubmissionDate(create_date=date.today(), customer=request.user)
             item_submission_date.save()
             formsets = formset.save(commit=False)
             for form in formsets:
-                form.customer = request.user
                 form.item_submissions_date = item_submission_date
                 form.save()
 
     context = {
-        'form':  formset
+        'form': formset
     }
 
     return render(request, 'customer/compute_calories.html', context)
+
+
+@login_required(login_url='login')
+def customer_calorie_view(request):
+    items_submission = ItemSubmissionDate.objects.filter(customer=request.user)
+    print(items_submission)
+    paginator = Paginator(items_submission, 3)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    print(page_obj)
+    context = {
+        "table": page_obj
+    }
+    return render(request, 'customer/view_calorie_submission.html', context)

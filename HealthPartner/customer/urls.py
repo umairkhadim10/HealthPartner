@@ -7,5 +7,6 @@ urlpatterns = [
     path('logout', customer_logout, name="logout"),
     path('dashboard', customer_dashboard, name="dashboard"),
     path('compute_calorie', customer_calorie_compute, name="compute_calories"),
+    path('view_calorie_submission', customer_calorie_view, name="view_calorie_submission"),
 
 ]

@@ -13,6 +13,7 @@ class User(AbstractUser):
 # model for item submissions in one day
 class ItemSubmissionDate(models.Model):
     create_date = models.DateField(null=False)
+    customer = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
     class Meta:
         ordering = ['-create_date']
@@ -20,8 +21,15 @@ class ItemSubmissionDate(models.Model):
     def __str__(self):
         return str(self.create_date)
 
+    @property
+    def calories(self):
+        calorie = 0
+        for item in self.items.all():
+            calorie += item.quantity * 0.7
+        return calorie
 
-# model for having in one day
+
+# model for save items eating in one day
 class Items(models.Model):
     FOOD_CHOICES = [
         ('Bread', 'Bread'),
@@ -33,8 +41,7 @@ class Items(models.Model):
     ]
     name = models.CharField(max_length=40, choices=FOOD_CHOICES)
     quantity = models.IntegerField()
-    customer = models.ForeignKey(User, on_delete=models.CASCADE)
-    item_submissions_date = models.ForeignKey(ItemSubmissionDate, on_delete=models.CASCADE)
+    item_submissions_date = models.ForeignKey(ItemSubmissionDate, on_delete=models.CASCADE, related_name='items')
 
     def __str__(self):
         return self.name
@@ -42,8 +49,5 @@ class Items(models.Model):
 
 # tweets table
 class Tweets(models.Model):
-    user_name = models.CharField(max_length=40,)
-    description = models.CharField(max_length=200,)
-
-
-
+    user_name = models.CharField(max_length=40, )
+    description = models.CharField(max_length=200, )

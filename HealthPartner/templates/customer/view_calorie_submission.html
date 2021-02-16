@@ -1,22 +1,7 @@
 {% extends "customer/base.html" %}
+{% load django_tables2 %}
 {% block content %}
-<div class="container  ">
-    <div class="row">
-        {% for tweet in tweets %}
-        <div class="card" style="width: 18rem;">
-            <div class="card-body">
-                <h5 class="card-title">{{tweet.user_name}}</h5>
-                <p class="card-text">{{tweet.description}}</p>
-
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-
-    <div class="d-grid gap-3">
-        <h3>LAST 5 Submissions</h3>
-    </div>
-
+<div class="container">
     <div class="card card-body">
         <table class="table table-dark table-striped">
             <thead>

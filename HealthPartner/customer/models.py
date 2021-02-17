@@ -40,7 +40,7 @@ class Items(models.Model):
         ('Milk', 'Milk'),
     ]
     name = models.CharField(max_length=40, choices=FOOD_CHOICES)
-    quantity = models.IntegerField()
+    quantity = models.PositiveIntegerField()
     item_submissions_date = models.ForeignKey(ItemSubmissionDate, on_delete=models.CASCADE, related_name='items')
 
     def __str__(self):

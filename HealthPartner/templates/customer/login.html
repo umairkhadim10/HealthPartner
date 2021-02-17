@@ -7,18 +7,22 @@
         {% for field in form %}
         <div class="form-group">
             <label for="exampleInputEmail1">{{ field.label}}</label>
-            <div class="form-control"> {{field}}</div>
+            <div class="form-control">{{field}}</div>
         </div>
         {% endfor %}
 
         {% if messages %}
-        <ul class="messages">
-            {% for message in messages %}
-            <li
-                    {% if message.error %} class="{{ message.error }}" {% endif %}>{{ message.error }}
+        <div class="span12">
+            <li>
+                {% for message in messages %}
+
+                <ul class="alert alert-{{ message.tags }}">
+                    {{ message|safe }}
+                </ul>
+
+                {% endfor %}
             </li>
-            {% endfor %}
-        </ul>
+        </div>
         {% endif %}
         <button type="submit" class="btn btn-primary">Submit</button>
     </form>

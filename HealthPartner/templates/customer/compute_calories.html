@@ -1,20 +1,27 @@
 {% extends "customer/base.html" %}
 {% block content %}
 <div class="container">
-    <div class="card card-body">
+
+
+    <div class="card card-body ">
         <form method="POST" action="{% url 'compute_calories' %}">
-            {{ form.management_form }}
             {% csrf_token %}
+            <div class="input_fields_wrap">
 
-            {% for field in form %}
+                <button class="btn btn-success add_field_button">Add More Fields</button>
 
-            <div class="row form-group">
-                {{field.as_p}}
+                <div class="form-inline">
+                    <div class="form-group ">
+                        <label for="email">Food Name:</label>
+                        <input class="form-control" id="email">
+                    </div>
+                    <div class="form-group">
+                        <label for="pwd">Quantity in grams:</label>
+                        <input class="form-control" id="pwd">
+                    </div>
+                </div>
+
             </div>
-            <hr>
-
-            {% endfor %}
-
             <button type="submit" class="btn btn-primary " data-toggle="modal" data-target="#exampleModal">Submit
             </button>
         </form>
@@ -40,6 +47,7 @@
             </div>
         </div>
     </div>
+
 </div>
 {% endblock %}
 
@@ -49,6 +57,56 @@
 $('#exampleModal').on('shown.bs.modal', function () {
   $('#exampleModal').trigger('focus')
 })
+
+</script>
+
+<script>
+	$(document).ready(function() {
+    var max_fields      = 10;
+    var wrapper         = $(".input_fields_wrap");
+    var add_button      = $(".add_field_button");
+
+    var x = 1; //initlal text box count
+
+
+   $(add_button).click(function(e){
+        e.preventDefault();
+        if(x < max_fields){
+
+
+            $(wrapper).append('<div ><div class="form-inline">'+
+                    '<div class="form-group ">'+
+                        '<label for="email">Food Name:</label>'+
+                        '<input class="form-control" id="email">'+
+                    '</div>'+
+                    '<div class="form-group">'+
+                        '<label for="pwd">Quantity in grams:</label>'+
+                        '<input class="form-control" id="pwd">'+
+                    '</div>'+
+                '</div>'+
+                '<a href="#" class="remove_field btn btn-success">Remove</a>'+
+                '</div>');
+            x++;
+	  }
+    });
+
+    $(wrapper).on("click",".remove_field", function(e){
+
+		e.preventDefault();
+		$(this).parent('div').remove();
+		x--;
+    })
+});
+
+
+
+
+
+
+
+
+
+
 
 
 </script>

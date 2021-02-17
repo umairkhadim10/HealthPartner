@@ -1,5 +1,4 @@
 from datetime import date
-
 from django.shortcuts import render, redirect, get_object_or_404
 from .forms import *
 from django.contrib.auth import authenticate, login, logout
@@ -56,7 +55,7 @@ def customer_logout(request):
 
 @login_required(login_url='login')
 def customer_dashboard(request):
-    items_submission = ItemSubmissionDate.objects.filter(customer=request.user)
+    items_submission = ItemSubmissionDate.objects.filter(customer=request.user).order_by('-id')[:5]
     paginator = Paginator(items_submission, 3)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -73,7 +72,9 @@ def customer_dashboard(request):
 
 @login_required(login_url='login')
 def customer_calorie_compute(request):
-    item_formset = modelformset_factory(Items, fields=('name', 'quantity',), extra=10)
+    if ItemSubmissionDate.objects.filter(create_date=date.today(), customer=request.user).exists():
+        return redirect('dashboard')
+    item_formset = modelformset_factory(Items, fields=('name', 'quantity',), extra=10,)
     # item_formset = inlineformset_factory(ItemSubmissionDate, Items, fields=('name', 'quantity',))
     formset = item_formset()
 
@@ -82,11 +83,11 @@ def customer_calorie_compute(request):
         if formset.is_valid():
             # formset.save(commit=False)
             # formset.customer = request.user
-            if ItemSubmissionDate.objects.filter(create_date=date.today(), customer=request.user).exists():
-                return redirect('dashboard')
             item_submission_date = ItemSubmissionDate(create_date=date.today(), customer=request.user)
             item_submission_date.save()
             formsets = formset.save(commit=False)
+
+            # save the item submission across all the items enter by user
             for form in formsets:
                 form.item_submissions_date = item_submission_date
                 form.save()
@@ -101,11 +102,9 @@ def customer_calorie_compute(request):
 @login_required(login_url='login')
 def customer_calorie_view(request):
     items_submission = ItemSubmissionDate.objects.filter(customer=request.user)
-    print(items_submission)
     paginator = Paginator(items_submission, 3)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    print(page_obj)
     context = {
         "table": page_obj
     }

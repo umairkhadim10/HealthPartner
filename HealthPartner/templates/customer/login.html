@@ -1,12 +1,12 @@
 {% extends "customer/base.html" %}
 {% block content %}
-<div class="container">
-    <form method="POST" action="{% url 'login' %}">
+<div  class="text-center">
+    <form class="form-signin"method="POST" action="{% url 'login' %}">
         {% csrf_token %}
-
+        <img class="mb-4" src="https://getbootstrap.com/docs/4.0/assets/brand/bootstrap-solid.svg" alt="" width="72" height="72">
         {% for field in form %}
         <div class="form-group">
-            <label for="exampleInputEmail1">{{ field.label}}</label>
+            <label class="sr-only" >{{ field.label}}</label>
             <div class="form-control">{{field}}</div>
         </div>
         {% endfor %}
@@ -24,7 +24,14 @@
             </li>
         </div>
         {% endif %}
-        <button type="submit" class="btn btn-primary">Submit</button>
+        <button type="submit" class="btn btn-sm btn-primary ">Login</button>
     </form>
+    <hr>
+    <p>Create an Account?  <a href="{% url 'signup' %}">Signup</a></p>
+
+
+
 </div>
+
+
 {% endblock %}

@@ -31,7 +31,10 @@
                 {% if table.has_next %}
                 <li class="page-item"><a class="page-link" href="?page={{table.next_page_number}}">Next</a></li>
                 {% endif %}
+                <li>
+                <p>Showing {{ table.start_index }}-{{ table.end_index }} of {{ table.paginator.count }}</p></li>
             </ul>
+
         </nav>
         <button type="button"  class="btn btn-danger">
             <a class="nav-link" href="{% url 'compute_calories' %}">Compute Today's Calories</a>

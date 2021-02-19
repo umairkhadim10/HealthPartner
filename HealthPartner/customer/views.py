@@ -56,7 +56,7 @@ def customer_logout(request):
 @login_required(login_url='login')
 def customer_dashboard(request):
     items_submission = ItemSubmissionDate.objects.filter(customer=request.user).order_by('-id')[:5]
-    paginator = Paginator(items_submission, 15)
+    paginator = Paginator(items_submission, 5)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     tweets = Tweets.objects.all()[:5]
@@ -99,9 +99,10 @@ def customer_calorie_compute(request):
 @login_required(login_url='login')
 def customer_calorie_view(request):
     items_submission = ItemSubmissionDate.objects.filter(customer=request.user)
-    paginator = Paginator(items_submission, 3)
+    paginator = Paginator(items_submission, 1)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
+    print(len(page_obj))
     context = {
         "table": page_obj
     }

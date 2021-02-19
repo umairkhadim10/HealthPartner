@@ -1,55 +1,103 @@
-{% extends "customer/base.html" %}
-{% block content %}
-<div class="container  ">
-    <div class="row">
-        {% for tweet in tweets %}
-        <div class="card" style="width: 18rem;">
-            <div class="card-body">
-                <h5 class="card-title">{{tweet.user_name}}</h5>
-                <p class="card-text">{{tweet.description}}</p>
+{% extends "customer/bas.html" %}
+{% load static %}
 
+
+{% block content %}
+<div class="content">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">Top 5 Tweeets</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <div class="row">
+                            {% for tweet in tweets %}
+                            <div class="card" style="width: 18rem;">
+                                <div class="card-body">
+                                    <h5 class="card-title">{{tweet.user_name}}</h5>
+                                    <p class="card-text">{{tweet.description}}</p>
+
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-        {% endfor %}
+        <div class="d-grid gap-3">
+            <h3>LAST 5 Submissions</h3>
+        </div>
+
+        <div class="card card-body">
+            <table class="table table-dark table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">Calories</th>
+                    <th scope="col">Date</th>
+
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for table in table %}
+                <tr>
+
+                    <td scope="row">{{table.calories}}</td>
+                    <td scope="row">{{table.create_date}}</td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            <nav aria-label="Page navigation example">
+                <ul class="pagination">
+                    {% if table.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{table.previous_page_number}}">Previous</a>
+                    </li>
+                    {% endif %}
+                    <li class="page-item"><a class="page-link"
+                                             href="?page={{table.number}}">{{table.number}}</a></li>
+                    {% if table.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{table.next_page_number}}">Next</a>
+                    </li>
+                    {% endif %}
+                </ul>
+
+            </nav>
+        </div>
+
     </div>
-
-    <div class="d-grid gap-3">
-        <h3>LAST 5 Submissions</h3>
-    </div>
-
-    <div class="card card-body">
-        <table class="table table-dark table-striped">
-            <thead>
-            <tr>
-                <th scope="col">Calories</th>
-                <th scope="col">Date</th>
-
-            </tr>
-            </thead>
-
-            <tbody>
-            {% for table in table %}
-            <tr>
-
-                <td scope="row">{{table.calories}}</td>
-                <td scope="row">{{table.create_date}}</td>
-            </tr>
-            {% endfor %}
-            </tbody>
-        </table>
-        <nav aria-label="Page navigation example">
-            <ul class="pagination">
-                {% if table.has_previous %}
-                <li class="page-item"><a class="page-link" href="?page={{table.previous_page_number}}">Previous</a></li>
-                {% endif %}
-                <li class="page-item"><a class="page-link" href="?page={{table.number}}">{{table.number}}</a></li>
-                {% if table.has_next %}
-                <li class="page-item"><a class="page-link" href="?page={{table.next_page_number}}">Next</a></li>
-                {% endif %}
-            </ul>
-
-        </nav>
-    </div>
-
 </div>
+
+{% endblock %}
+<!--   Core JS Files   -->
+{% block js %}
+<script src="{% static 'assets/js/core/jquery.min.js' %}"></script>
+<script src="{% static 'assets/js/core/popper.min.js' %}"></script>
+<script src="{% static 'assets/js/core/bootstrap.min.js' %}"></script>
+<script src="{% static 'assets/js/plugins/perfect-scrollbar.jquery.min.js' %}"></script>
+<!--  Google Maps Plugin    -->
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_KEY_HERE"></script>
+<!-- Chart JS -->
+<script src="{% static 'assets/js/plugins/chartjs.min.js' %}"></script>
+<!--  Notifications Plugin    -->
+<script src="{% static 'assets/js/plugins/bootstrap-notify.js' %}"></script>
+<!-- Control Center for Now Ui Dashboard: parallax effects, scripts for the example pages etc -->
+<script src="{% static 'assets/js/now-ui-dashboard.min.js?v=1.5.0' %}" type="text/javascript"></script>
+<!-- Now Ui Dashboard DEMO methods, don't include it in your project! -->
+<script src="{% static 'assets/demo/demo.js' %}"></script>
+<script>
+
+    $(document).ready(function() {
+      // Javascript method's body can be found in assets/js/demos.js
+      demo.initDashboardPageCharts();
+
+    });
+
+
+
+</script>
+
 {% endblock %}

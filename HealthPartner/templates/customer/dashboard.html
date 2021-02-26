@@ -1,22 +1,20 @@
-{% extends "customer/bas.html" %}
+{% extends "customer/base.html" %}
 {% load static %}
-
-
 {% block content %}
 <div class="content">
     <div class="row">
         <div class="col-md-12">
             <div class="card">
                 <div class="card-header">
-                    <h4 class="card-title">Top 5 Tweeets</h4>
+                    <h4 class="card-title">Health Reddits</h4>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
                         <div class="row">
-                            {% for tweet in tweets %}
+                            {% for tweet in sub_reddit %}
                             <div class="card" style="width: 18rem;">
                                 <div class="card-body">
-                                    <h5 class="card-title">{{tweet.user_name}}</h5>
+                                    <h5 class="card-title"><small>UTC: </small>{{tweet.created_utc}}</h5>
                                     <p class="card-text">{{tweet.description}}</p>
 
                                 </div>
@@ -37,35 +35,19 @@
                 <tr>
                     <th scope="col">Calories</th>
                     <th scope="col">Date</th>
-
                 </tr>
                 </thead>
 
                 <tbody>
                 {% for table in table %}
                 <tr>
-
                     <td scope="row">{{table.calories}}</td>
                     <td scope="row">{{table.create_date}}</td>
                 </tr>
                 {% endfor %}
                 </tbody>
             </table>
-            <nav aria-label="Page navigation example">
-                <ul class="pagination">
-                    {% if table.has_previous %}
-                    <li class="page-item"><a class="page-link" href="?page={{table.previous_page_number}}">Previous</a>
-                    </li>
-                    {% endif %}
-                    <li class="page-item"><a class="page-link"
-                                             href="?page={{table.number}}">{{table.number}}</a></li>
-                    {% if table.has_next %}
-                    <li class="page-item"><a class="page-link" href="?page={{table.next_page_number}}">Next</a>
-                    </li>
-                    {% endif %}
-                </ul>
 
-            </nav>
         </div>
 
     </div>
@@ -95,6 +77,7 @@
       demo.initDashboardPageCharts();
 
     });
+
 
 
 

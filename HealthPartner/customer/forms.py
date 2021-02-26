@@ -1,6 +1,7 @@
 from django import forms
 from .models import *
 from django.contrib.auth.forms import UserCreationForm
+from django.forms import modelformset_factory
 
 
 class SignUpForm(UserCreationForm):
@@ -15,14 +16,17 @@ class LoginForm(forms.ModelForm):
     class Meta:
         model = User
         fields = ['username', 'password']
-        # widgets = {
-        #     'username': forms.TextInput(attrs={'placeholder': 'Name'}),
-        #     'password': forms.TextInput(
-        #         attrs={'placeholder': 'Password'}),
-        # }
 
 
 class ItemForm(forms.ModelForm):
     class Meta:
         model = Items
         fields = ['name', 'quantity', ]
+
+
+ItemsModelFormset = modelformset_factory(
+    Items,
+    fields=('name', 'quantity'),
+    extra=1,
+
+)

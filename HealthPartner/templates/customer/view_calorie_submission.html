@@ -1,20 +1,21 @@
-{% extends "customer/bas.html" %}
+{% extends "customer/base.html" %}
 {% load django_tables2 %}
+{% load sorting_tags %}
 {% block content %}
 <div class="container">
     <div class="card card-body">
         <table class="table table-dark table-striped">
             <thead>
             <tr>
-                <th scope="col">Calories</th>
-                <th scope="col">Date</th>
+                <th scope="col">{% anchor calories _("Calories") %}</th>
+                <th scope="col">{% anchor create_date _("Date") %}</th>
             </tr>
             </thead>
 
             <tbody>
+            {% autosort table %}
             {% for table in table %}
             <tr>
-
                 <td scope="row">{{table.calories}}</td>
                 <td scope="row">{{table.create_date}}</td>
             </tr>

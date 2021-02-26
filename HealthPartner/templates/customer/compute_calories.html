@@ -1,95 +1,110 @@
-{% extends "customer/bas.html" %}
+{% extends "customer/base.html" %}
 {% block content %}
 <div class="container">
-    <div class="card card-body ">
-        <form method="POST" action="{% url 'compute_calories' %}">
-            {% csrf_token %}
-            <div class="input_fields_wrap">
+    <form class="form-horizontal" method="POST" action="">
+        {% csrf_token %}
+        {{ formset.management_form }}
+        {% for form in formset %}
+        <div class="row form-row spacer">
+            <div class="col-2">
+                <label>{{form.quantity.label}}</label>
+            </div>
+            <div class="col-4">
+                <div class="input-group">
+                    {{form.quantity}}
 
-                <button class="btn btn-success add_field_button">Add More Fields</button>
+                </div>
+            </div>
 
-                <div class="form-inline">
-                    <div class="form-group ">
-                        <label for="email">Food Name:</label>
-                        <select id='email' name="food_name" class="form-select" aria-label="Default select example">
-                            <option selected>Mutton</option>
-                            <option value="1">Egg</option>
-                            <option value="2">Chicken</option>
-                            <option value="3">Beef</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label for="pwd">Quantity in grams:</label>
-                        <input class="form-control" name="quantity" id="pwd">
+            <div class="col-2">
+                <label>{{form.name.label}}</label>
+            </div>
+            <div class="col-4">
+                <div class="input-group">
+                    {{form.name}}
+                    <div class="input-group-append">
+                        <button class="btn btn-success add-form-row">+</button>
                     </div>
                 </div>
-
             </div>
-            {% if messages %}
-            <div class="span12">
-                <li>
-                    {% for message in messages %}
+        </div>
+        {% endfor %}
 
-                    <ul class="alert alert-{{ message.tags }}">
-                        {{ message|safe }}
-                    </ul>
-
-                    {% endfor %}
-                </li>
+        {% for dict in formset.errors %}
+            {{dict}}
+        {% endfor %}
+        <div class="row spacer">
+            <div class="col-4 offset-2">
+                <button type="submit" class="btn btn-block btn-primary">Create</button>
             </div>
-            {% endif %}
-            <button type="submit" class="btn btn-primary " data-toggle="modal" data-target="#exampleModal">Submit
-            </button>
-        </form>
-    </div>
+        </div>
+    </form>
 </div>
-
-
 {% endblock %}
 
 {% block js %}
 
-
 <script>
-	$(document).ready(function() {
-    var max_fields      = 10;
-    var wrapper         = $(".input_fields_wrap");
-    var add_button      = $(".add_field_button");
-
-    var x = 1; //initlal text box count
-
-
-   $(add_button).click(function(e){
-        e.preventDefault();
-        if(x < max_fields){
-            $(wrapper).append('<div ><div class="form-inline">'+
-                    '<div class="form-group ">'+
-                        '<label for="email">Food Name:</label>'+
-                         '<select id="email" name="food_name" class="form-select" aria-label="Default select example">'+
-                            '<option selected>Mutton</option>'+
-                            '<option value="1">Egg</option>'+
-                            '<option value="2">Chicken</option>'+
-                            '<option value="3">Beef</option>'+
-                        '</select>'+
-                    '</div>'+
-                    '<div class="form-group">'+
-                        '<label for="pwd">Quantity in grams:</label>'+
-                        '<input class="form-control" name="quantity" id="pwd">'+
-                    '</div>'+
-                '</div>'+
-                '<a href="#" class="remove_field btn btn-success">Remove</a>'+
-                '</div>');
-            x++;
-	  }
+function updateElementIndex(el, prefix, ndx) {
+    var id_regex = new RegExp('(' + prefix + '-\\d+)');
+    var replacement = prefix + '-' + ndx;
+    if ($(el).attr("for")) $(el).attr("for", $(el).attr("for").replace(id_regex, replacement));
+    if (el.id) el.id = el.id.replace(id_regex, replacement);
+    if (el.name) el.name = el.name.replace(id_regex, replacement);
+}
+function cloneMore(selector, prefix) {
+    var newElement = $(selector).clone(true);
+    var total = $('#id_' + prefix + '-TOTAL_FORMS').val();
+    newElement.find(':input:not([type=button]):not([type=submit]):not([type=reset])').each(function() {
+        if ($(this).attr('name')) {
+            var name = $(this).attr('name').replace('-' + (total-1) + '-', '-' + total + '-');
+            var id = 'id_' + name;
+            $(this).attr({'name': name, 'id': id}).val('').removeAttr('checked');
+        }
     });
-
-    $(wrapper).on("click",".remove_field", function(e){
-
-		e.preventDefault();
-		$(this).parent('div').remove();
-		x--;
-    })
+    newElement.find('label').each(function() {
+        var forValue = $(this).attr('for');
+        if (forValue) {
+          forValue = forValue.replace('-' + (total-1) + '-', '-' + total + '-');
+          $(this).attr({'for': forValue});
+        }
+    });
+    total++;
+    $('#id_' + prefix + '-TOTAL_FORMS').val(total);
+    $(selector).after(newElement);
+    var conditionRow = $('.form-row:not(:last)');
+    conditionRow.find('.btn.add-form-row')
+    .removeClass('btn-success').addClass('btn-danger')
+    .removeClass('add-form-row').addClass('remove-form-row')
+    .html('<span class="glyphicon glyphicon-minus" aria-hidden="true"></span>');
+    return false;
+}
+function deleteForm(prefix, btn) {
+    var total = parseInt($('#id_' + prefix + '-TOTAL_FORMS').val());
+    if (total > 1){
+        btn.closest('.form-row').remove();
+        var forms = $('.form-row');
+        $('#id_' + prefix + '-TOTAL_FORMS').val(forms.length);
+        for (var i=0, formCount=forms.length; i<formCount; i++) {
+            $(forms.get(i)).find(':input').each(function() {
+                updateElementIndex(this, prefix, i);
+            });
+        }
+    }
+    return false;
+}
+$(document).on('click', '.add-form-row', function(e){
+    e.preventDefault();
+    cloneMore('.form-row:last', 'form');
+    return false;
 });
+$(document).on('click', '.remove-form-row', function(e){
+    e.preventDefault();
+    deleteForm('form', $(this));
+    return false;
+});
+
+
 
 
 </script>

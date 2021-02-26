@@ -5,17 +5,25 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from .models import *
 from django.contrib.auth.decorators import login_required
+from .forms import ItemsModelFormset
 from django.forms.formsets import formset_factory
 from django.forms.models import modelformset_factory
 from django.forms import inlineformset_factory
 from django.contrib.auth.hashers import check_password
 from .tables import ItemsTable
 from django.core.paginator import Paginator
+from .decorators import login_register_check
+import tweepy
+import requests
+# from facebook_posts.models import Post
+import praw
+from .task import get_post_by_reddit_Api
+from django_celery_beat.models import PeriodicTask, IntervalSchedule
 
 
 # Create your views here.
 
-
+@login_register_check
 def customer_signup(request):
     signup_form = SignUpForm()
     if request.method == "POST":
@@ -29,6 +37,7 @@ def customer_signup(request):
     return render(request, 'customer/signup.html', context)
 
 
+@login_register_check
 def customer_login(request):
     login_form = LoginForm()
     if request.method == "POST":
@@ -55,15 +64,23 @@ def customer_logout(request):
 
 @login_required(login_url='login')
 def customer_dashboard(request):
-    items_submission = ItemSubmissionDate.objects.filter(customer=request.user).order_by('-id')[:5]
-    paginator = Paginator(items_submission, 5)
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
-    tweets = Tweets.objects.all()[:5]
-    # last_five_items = Items.objects.all().order_by('item_submissions_date')[:5]
+
+    # schedule, created = IntervalSchedule.objects.get_or_create(
+    #     every=10,
+    #     period=IntervalSchedule.SECONDS,
+    # )
+    # PeriodicTask.objects.create(
+    #     interval=schedule,  # we created this above.
+    #     name='Importing reddits from',  # simply describes this periodic task.
+    #     task='customer.task.get_post_by_reddit_Api',  # name of task.
+    # )
+
+    items_submission = ItemSubmissionDate.objects.filter(customer=request.user).order_by('-create_date')[:5]
+    sub_reddit = Tweets.objects.all()[:5]
     context = {
-        'tweets': tweets,
-        "table": page_obj
+        'sub_reddit': sub_reddit,
+        "table": items_submission,
+
     }
     return render(request, 'customer/dashboard.html', context)
 
@@ -74,36 +91,55 @@ def customer_dashboard(request):
 def customer_calorie_compute(request):
     if ItemSubmissionDate.objects.filter(create_date=date.today(), customer=request.user).exists():
         return redirect('dashboard')
-    error = False
-    if request.method == "POST":
-        quantity_list = request.POST.getlist('quantity')
-        food_list = request.POST.getlist('food_name')
-        for quantity in quantity_list:
-            if int(quantity) < 1:
-                messages.error(request, "Quantity cannot be less than 1 grams")
-                error = True
-        dic = {'food_list': food_list,
-               'quantity_list': quantity_list,
-               }
-        if not error:
+
+    formset = ItemsModelFormset(queryset=Items.objects.none())
+    if request.method == 'POST':
+        formset = ItemsModelFormset(request.POST, )
+        if formset.is_valid():
             item_submission_date = ItemSubmissionDate(create_date=date.today(), customer=request.user)
             item_submission_date.save()
-            for i in range(len(dic['food_list'])):
-                item = Items(name=dic['food_list'][i], quantity=dic['quantity_list'][i],
-                             item_submissions_date=item_submission_date)
-                item.save()
+            for form in formset:
 
-    return render(request, 'customer/compute_calories.html', )
+                if form.cleaned_data.get('name'):
+                    item = form.save(commit=False)
+                    item.item_submissions_date = item_submission_date
+                    item.save()
+
+    print(formset.errors)
+    context = {
+        'formset': formset
+    }
+
+    return render(request, 'customer/compute_calories.html', context)
 
 
 @login_required(login_url='login')
 def customer_calorie_view(request):
-    items_submission = ItemSubmissionDate.objects.filter(customer=request.user)
-    paginator = Paginator(items_submission, 1)
+    sort = request.GET.get('sort')
+    if sort:
+        if sort == 'calories':
+            if request.GET.get('dir') == 'asc':
+                items_submission = sorted(ItemSubmissionDate.objects.filter(customer=request.user),
+                                          key=lambda m: m.calories)
+
+            elif request.GET.get('dir') == 'desc':
+                items_submission = sorted(ItemSubmissionDate.objects.filter(customer=request.user),
+                                          key=lambda m: m.calories, reverse=True)
+
+        elif sort == 'create_date':
+            if request.GET.get('dir') == 'asc':
+                items_submission = ItemSubmissionDate.objects.filter(customer=request.user).order_by('create_date')
+
+            elif request.GET.get('dir') == 'desc':
+                items_submission = ItemSubmissionDate.objects.filter(customer=request.user).order_by('-create_date')
+
+    else:
+        items_submission = ItemSubmissionDate.objects.filter(customer=request.user)
+    paginator = Paginator(items_submission, 3)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    print(len(page_obj))
     context = {
-        "table": page_obj
+        "table": page_obj,
+
     }
     return render(request, 'customer/view_calorie_submission.html', context)

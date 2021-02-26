@@ -1,3 +1,4 @@
+from django.core.validators import MinValueValidator
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
@@ -15,9 +16,6 @@ class User(AbstractUser):
 class ItemSubmissionDate(models.Model):
     create_date = models.DateField(null=False)
     customer = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-
-    class Meta:
-        ordering = ['-create_date']
 
     def __str__(self):
         return str(self.create_date)
@@ -41,7 +39,7 @@ class Items(models.Model):
         ('Milk', 'Milk'),
     ]
     name = models.CharField(max_length=40, choices=FOOD_CHOICES)
-    quantity = models.PositiveIntegerField()
+    quantity = models.PositiveIntegerField(validators=[MinValueValidator(1)])
     item_submissions_date = models.ForeignKey(ItemSubmissionDate, on_delete=models.CASCADE, related_name='items')
 
     def __str__(self):
@@ -50,5 +48,6 @@ class Items(models.Model):
 
 # tweets table
 class Tweets(models.Model):
-    user_name = models.CharField(max_length=40, )
+    # user_name = models.CharField(max_length=40, )
+    created_utc = models.IntegerField(null=True)
     description = models.CharField(max_length=200, )

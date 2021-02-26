@@ -29,6 +29,7 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 # Application definition
+CELERY_BROKER_URL = 'amqp://localhost'
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -40,7 +41,21 @@ INSTALLED_APPS = [
     'customer',
     'widget_tweaks',
     "django_tables2",
+    'webstack_django_sorting',
+    'django_celery_beat'
+    # 'oauth_tokens',
+    # 'facebook_api',
+    # 'facebook_applications',
+    # 'facebook_pages',
+    # 'facebook_users',
+    # 'facebook_posts'
 ]
+
+CELERY_IMPORTS = (
+    'customer.task',
+
+)
+
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -125,4 +140,3 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "static")
 ]
 STATIC_ROOT = "staticfiles"
-

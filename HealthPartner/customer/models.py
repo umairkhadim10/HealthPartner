@@ -48,6 +48,5 @@ class Items(models.Model):
 
 # tweets table
 class Tweets(models.Model):
-    # user_name = models.CharField(max_length=40, )
-    created_utc = models.IntegerField(null=True)
+    create_time = models.DateTimeField(null=True)
     description = models.CharField(max_length=200, )

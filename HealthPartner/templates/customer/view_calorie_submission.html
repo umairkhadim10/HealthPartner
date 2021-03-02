@@ -1,9 +1,10 @@
 {% extends "customer/base.html" %}
-{% load django_tables2 %}
+
 {% load sorting_tags %}
 {% block content %}
 <div class="container">
     <div class="card card-body">
+        <h4 class="text-center alert alert-danger">HISTORY</h4>
         <table class="table table-dark table-striped">
             <thead>
             <tr>
@@ -32,7 +33,7 @@
                 <li class="page-item"><a class="page-link" href="?page={{table.next_page_number}}">Next</a></li>
                 {% endif %}
                 <li>
-                <p>Showing {{ table.start_index }}-{{ table.number }} of {{ table.paginator.count }}</p></li>
+                <p>Showing {{ table.start_index }}-{{ table.end_index }} of {{ table.paginator.count }}</p></li>
             </ul>
 
         </nav>

@@ -14,7 +14,7 @@
                             {% for tweet in sub_reddit %}
                             <div class="card" style="width: 18rem;">
                                 <div class="card-body">
-                                    <h5 class="card-title"><small>UTC: </small>{{tweet.created_utc}}</h5>
+                                    <h5 class="card-title"> {{tweet.create_time }}</h5>
                                     <p class="card-text">{{tweet.description}}</p>
 
                                 </div>

@@ -43,17 +43,10 @@ INSTALLED_APPS = [
     "django_tables2",
     'webstack_django_sorting',
     'django_celery_beat'
-    # 'oauth_tokens',
-    # 'facebook_api',
-    # 'facebook_applications',
-    # 'facebook_pages',
-    # 'facebook_users',
-    # 'facebook_posts'
 ]
 
 CELERY_IMPORTS = (
     'customer.task',
-
 )
 
 

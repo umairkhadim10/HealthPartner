@@ -16,7 +16,6 @@ app = Celery('HealthPartner')
 app.config_from_object('django.conf:settings', namespace='CELERY')
 
 
-
 @app.on_after_configure.connect
 def setup_periodic_tasks(sender, **kwargs):
     # Calls test('hello') every 10 seconds.
@@ -38,11 +37,11 @@ def get_post_by_reddit_Api(arg):
     #                      client_secret='cEKVwb65zJJoejN6YphDRamyHycdHA',
     #                      user_agent='my user agent')
     #
-    # # to find the top most submission in the subreddit "GRE"
+    # # to find the top most submission in the subreddit "HEALTH"
     # subreddit = reddit.subreddit('HEALTH')
     #
     # for submission in subreddit.top(limit=5):
     #     # displays the submission title
     #     tweets = Tweets(user_name='hameeed', description=submission.title)
     #     tweets.save()
-    print('i   kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk')
+    print('periodic celery task ')

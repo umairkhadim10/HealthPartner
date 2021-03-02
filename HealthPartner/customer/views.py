@@ -6,22 +6,12 @@ from django.contrib import messages
 from .models import *
 from django.contrib.auth.decorators import login_required
 from .forms import ItemsModelFormset
-from django.forms.formsets import formset_factory
-from django.forms.models import modelformset_factory
-from django.forms import inlineformset_factory
-from django.contrib.auth.hashers import check_password
-from .tables import ItemsTable
 from django.core.paginator import Paginator
 from .decorators import login_register_check
-import tweepy
-import requests
-# from facebook_posts.models import Post
-import praw
-from .task import get_post_by_reddit_Api
-from django_celery_beat.models import PeriodicTask, IntervalSchedule
 
 
-# Create your views here.
+# Function for customer signup
+
 
 @login_register_check
 def customer_signup(request):
@@ -37,6 +27,8 @@ def customer_signup(request):
     return render(request, 'customer/signup.html', context)
 
 
+# Function for customer login
+
 @login_register_check
 def customer_login(request):
     login_form = LoginForm()
@@ -48,7 +40,7 @@ def customer_login(request):
             login(request, user)
             return redirect('dashboard')
         else:
-            messages.error(request, "incorrect username or password")
+            messages.error(request, "incorrect Username or Password")
 
     context = {
         'form': login_form
@@ -56,15 +48,18 @@ def customer_login(request):
     return render(request, 'customer/login.html', context)
 
 
+# Function for customer logout
+
 @login_required(login_url='login')
 def customer_logout(request):
     logout(request)
     return redirect('login')
 
 
+# Function for getting subreddits and customer calories and pass to template
+
 @login_required(login_url='login')
 def customer_dashboard(request):
-
     # schedule, created = IntervalSchedule.objects.get_or_create(
     #     every=10,
     #     period=IntervalSchedule.SECONDS,
@@ -74,6 +69,20 @@ def customer_dashboard(request):
     #     name='Importing reddits from',  # simply describes this periodic task.
     #     task='customer.task.get_post_by_reddit_Api',  # name of task.
     # )
+
+    # reddit = praw.Reddit(client_id='ISnOA13qK99q4A',
+    #                      client_secret='cEKVwb65zJJoejN6YphDRamyHycdHA',
+    #                      user_agent='my user agent')
+    #
+    # # to find the top most submission in the subreddit "HEALTH"
+    # subreddit = reddit.subreddit('HEALTH')
+
+    # for submission in subreddit.top(limit=5):
+    #
+    #     dt = datetime.datetime.fromtimestamp(float(submission.created_utc))
+    #     print(dt)
+    #     tweets = Tweets(create_time=dt, description=submission.title)
+    #     tweets.save()
 
     items_submission = ItemSubmissionDate.objects.filter(customer=request.user).order_by('-create_date')[:5]
     sub_reddit = Tweets.objects.all()[:5]
@@ -105,12 +114,13 @@ def customer_calorie_compute(request):
                     item.item_submissions_date = item_submission_date
                     item.save()
 
-    print(formset.errors)
     context = {
         'formset': formset
     }
 
     return render(request, 'customer/compute_calories.html', context)
+
+# Function to show Customer Calorie View having pagination and sort Columns as per of Customer request
 
 
 @login_required(login_url='login')
@@ -135,7 +145,7 @@ def customer_calorie_view(request):
 
     else:
         items_submission = ItemSubmissionDate.objects.filter(customer=request.user)
-    paginator = Paginator(items_submission, 3)
+    paginator = Paginator(items_submission, 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     context = {

@@ -18,6 +18,6 @@ def get_post_by_reddit_Api():
     #     # displays the submission title
     #     tweets = Tweets(created_utc=submission.created_utc, description=submission.title)
     #     tweets.save()
-    print('i ma kkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkkk')
+    print('task')
 
 

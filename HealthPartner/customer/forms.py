@@ -18,15 +18,14 @@ class LoginForm(forms.ModelForm):
         fields = ['username', 'password']
 
 
-class ItemForm(forms.ModelForm):
-    class Meta:
-        model = Items
-        fields = ['name', 'quantity', ]
-
+# class ItemForm(forms.ModelForm):
+#     class Meta:
+#         model = Items
+#         fields = ['name', 'quantity', ]
+#
 
 ItemsModelFormset = modelformset_factory(
     Items,
     fields=('name', 'quantity'),
     extra=1,
-
 )

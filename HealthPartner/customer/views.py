@@ -1,5 +1,12 @@
 from datetime import date
+
+from django.contrib.sites.shortcuts import get_current_site
+from django.http import HttpResponse
 from django.shortcuts import render, redirect, get_object_or_404
+from django.template.loader import render_to_string
+from django.utils.encoding import force_bytes, force_text
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+
 from .forms import *
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -8,9 +15,9 @@ from django.contrib.auth.decorators import login_required
 from .forms import ItemsModelFormset
 from django.core.paginator import Paginator
 from .decorators import login_register_check
-
-
+from django.core.mail import EmailMessage
 # Function for customer signup
+from .tokens import account_activation_token
 
 
 @login_register_check
@@ -19,12 +26,45 @@ def customer_signup(request):
     if request.method == "POST":
         signup_form = SignUpForm(request.POST)
         if signup_form.is_valid():
-            signup_form.save()
-            return redirect('login')
+            # return redirect('login')
+
+            user = signup_form.save(commit=False)
+            user.is_active = False
+            user.save()
+            current_site = get_current_site(request)
+            mail_subject = 'Activate your HealthPartner account.'
+            message = render_to_string('customer/acc_active_email.html', {
+                'user': user,
+                'domain': current_site.domain,
+                'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+                'token': account_activation_token.make_token(user),
+            })
+            to_email = signup_form.cleaned_data.get('email')
+            email = EmailMessage(
+                mail_subject, message, to=[to_email]
+            )
+            email.send()
+            return render(request, 'customer/account_confirmation_message.html',)
+
     context = {
         'form': signup_form
     }
     return render(request, 'customer/signup.html', context)
+
+
+def activate(request, uidb64, token):
+    try:
+        uid = force_text(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except(TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+    if user is not None and account_activation_token.check_token(user, token):
+        user.is_active = True
+        user.save()
+        # return redirect('home')
+        return render(request, 'customer/account_confirmation.html',)
+    else:
+        return HttpResponse('Activation link is invalid!')
 
 
 # Function for customer login
@@ -37,8 +77,12 @@ def customer_login(request):
         user_password = request.POST.get('password')
         user = authenticate(username=user_name, password=user_password)
         if user is not None:
-            login(request, user)
-            return redirect('dashboard')
+            user_confirmation = User.objects.get(username=user_name)
+            if user_confirmation.is_active:
+                login(request, user)
+                return redirect('dashboard')
+            else:
+                messages.error(request, "Please verify your account !!")
         else:
             messages.error(request, "incorrect Username or Password")
 
@@ -60,16 +104,6 @@ def customer_logout(request):
 
 @login_required(login_url='login')
 def customer_dashboard(request):
-    # schedule, created = IntervalSchedule.objects.get_or_create(
-    #     every=10,
-    #     period=IntervalSchedule.SECONDS,
-    # )
-    # PeriodicTask.objects.create(
-    #     interval=schedule,  # we created this above.
-    #     name='Importing reddits from',  # simply describes this periodic task.
-    #     task='customer.task.get_post_by_reddit_Api',  # name of task.
-    # )
-
     # reddit = praw.Reddit(client_id='ISnOA13qK99q4A',
     #                      client_secret='cEKVwb65zJJoejN6YphDRamyHycdHA',
     #                      user_agent='my user agent')
@@ -83,7 +117,6 @@ def customer_dashboard(request):
     #     print(dt)
     #     tweets = Tweets(create_time=dt, description=submission.title)
     #     tweets.save()
-
     items_submission = ItemSubmissionDate.objects.filter(customer=request.user).order_by('-create_date')[:5]
     sub_reddit = Tweets.objects.all()[:5]
     context = {
@@ -98,9 +131,11 @@ def customer_dashboard(request):
 
 @login_required(login_url='login')
 def customer_calorie_compute(request):
+    # block customer submission if he has already submitted today's meals detail
     if ItemSubmissionDate.objects.filter(create_date=date.today(), customer=request.user).exists():
-        return redirect('dashboard')
+        return render(request, 'customer/compute_calories_denied.html')
 
+    # creating multiple forms for Customer items submissions
     formset = ItemsModelFormset(queryset=Items.objects.none())
     if request.method == 'POST':
         formset = ItemsModelFormset(request.POST, )
@@ -120,11 +155,13 @@ def customer_calorie_compute(request):
 
     return render(request, 'customer/compute_calories.html', context)
 
+
 # Function to show Customer Calorie View having pagination and sort Columns as per of Customer request
 
 
 @login_required(login_url='login')
 def customer_calorie_view(request):
+    # check if the user request for sorting or not
     sort = request.GET.get('sort')
     if sort:
         if sort == 'calories':
@@ -145,6 +182,8 @@ def customer_calorie_view(request):
 
     else:
         items_submission = ItemSubmissionDate.objects.filter(customer=request.user)
+
+    # paginate the items_submission list
     paginator = Paginator(items_submission, 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
